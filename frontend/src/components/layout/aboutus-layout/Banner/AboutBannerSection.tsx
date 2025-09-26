@@ -1,0 +1,31 @@
+'use client';
+
+import { Box } from '@mui/material';
+import React from 'react';
+
+import {
+  AboutHeader,
+  HeaderContainer,
+  HeaderImage,
+  HeaderText,
+  HeaderTitle,
+} from '@/app/(public)/about/components/AboutBanner';
+
+const AboutBannerSection = () => {
+  return (
+    <AboutHeader>
+      <HeaderContainer>
+        <HeaderImage src="/about/voice-ai.png" alt="Voice AI" />
+        <Box>
+          <HeaderTitle>Building the future of Voice AI</HeaderTitle>
+          <HeaderText>
+            Transforming human-machine interaction through advanced voice
+            technology.
+          </HeaderText>
+        </Box>
+      </HeaderContainer>
+    </AboutHeader>
+  );
+};
+
+export default AboutBannerSection;

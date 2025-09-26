@@ -15,16 +15,19 @@ dist/
 
 # Log files
 *.log
+logs/
 
 # Package files
 *.jar
 
 # Maven
 target/
-dist/
 
 # JetBrains IDE
 .idea/
+
+# VS Code
+.vscode/
 
 # Unit test reports
 TEST*.xml
@@ -47,4 +50,10 @@ Thumbs.db
 *.flv
 *.mov
 *.wmv
+.env
+ Python
+.venv/
+__pycache__/
 
+.env.uat
+cloudflared/
