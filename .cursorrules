@@ -1,0 +1,501 @@
+# DispatchAI - AI Agent System Development Rules
+
+You are an expert full-stack developer working on DispatchAI, an Agentic AI system for voice-based service bookings. Follow these rules strictly when writing code.
+
+## Core Principles
+
+### SOLID Principles
+
+**S - Single Responsibility Principle**
+- Each class/module should have one, and only one, reason to change
+- Services should handle business logic only, not data transformation or validation
+- Controllers should only handle HTTP requests/responses
+- Helpers should focus on a single utility purpose
+- Example: `CallProcessorService` orchestrates calls, `SessionHelper` manages sessions, `AiIntegrationService` handles AI communication
+
+**O - Open/Closed Principle**
+- Entities should be open for extension but closed for modification
+- Use interfaces and abstract classes for extensibility
+- Prefer composition over inheritance
+- Use strategy pattern for varying behaviors
+
+**L - Liskov Substitution Principle**
+- Derived classes must be substitutable for their base classes
+- Ensure interfaces are properly implemented
+- Maintain consistent method signatures
+
+**I - Interface Segregation Principle**
+- Many client-specific interfaces are better than one general-purpose interface
+- Don't force classes to implement interfaces they don't use
+- Create focused DTOs and interfaces
+
+**D - Dependency Inversion Principle**
+- Depend on abstractions, not concretions
+- Use dependency injection (NestJS provides this)
+- Inject services via constructor
+- Example:
+```typescript
+// ✅ Good - Depends on abstraction
+constructor(private readonly sessionHelper: SessionHelper) {}
+
+// ❌ Bad - Creates concrete dependency
+constructor() {
+  this.sessionHelper = new SessionHelper();
+}
+```
+
+### DRY (Don't Repeat Yourself)
+
+- Extract repeated logic into reusable functions/services
+- Use helpers for common transformations (see `DataTransformerHelper`)
+- Create shared constants for magic strings/numbers
+- Utilize TypeScript utility types to avoid type duplication
+- Example:
+```typescript
+// ✅ Good - Reusable helper
+class DataTransformerHelper {
+  static buildCustomerMessageForAI(message: string) {
+    return {
+      speaker: 'customer',
+      message,
+      startedAt: new Date().toISOString()
+    };
+  }
+}
+
+// ❌ Bad - Repeated logic
+// Building the same object structure in multiple places
+```
+
+### KISS (Keep It Simple, Stupid)
+
+- Write code that is easy to read and understand
+- Avoid over-engineering solutions
+- Prefer explicit over clever code
+- Break complex logic into smaller, named functions
+- Use descriptive variable names
+- Example:
+```typescript
+// ✅ Good - Simple and clear
+async function getAIReply(callSid: string, message: string) {
+  const response = await this.http.post('/ai/conversation', {
+    callSid,
+    customerMessage: this.buildMessage(message)
+  });
+  return response.data;
+}
+
+// ❌ Bad - Too clever, hard to understand
+async function getAIReply(c: string, m: string) {
+  return (await this.http.post('/ai/conversation', {
+    c, customerMessage: {s:'customer',m,t:new Date().toISOString()}
+  })).data;
+}
+```
+
+## Technology-Specific Rules
+
+### Backend (NestJS/TypeScript)
+
+**Module Organization**
+- Follow the existing module structure in `src/modules/`
+- Each feature should be a separate module with:
+  - `*.module.ts` - Module definition
+  - `*.controller.ts` - HTTP endpoints
+  - `*.service.ts` - Business logic
+  - `schema/*.schema.ts` - Mongoose schemas
+  - `dto/*.dto.ts` - Data transfer objects
+  - `interfaces/*.ts` - TypeScript interfaces (if needed)
+
+**Path Aliases**
+- ALWAYS use `@/` prefix for imports
+```typescript
+// ✅ Good
+import { UserService } from '@/modules/user/user.service';
+
+// ❌ Bad
+import { UserService } from '../../user/user.service';
+```
+
+**Dependency Injection**
+- Use constructor injection for all dependencies
+- Mark services with `@Injectable()`
+- Export services from modules that need to be shared
+
+**DTOs and Validation**
+- Use `class-validator` decorators for input validation
+- Create separate DTOs for create/update operations
+- Use `@ApiProperty()` for Swagger documentation
+```typescript
+import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+
+export class CreateServiceDto {
+  @ApiProperty({ description: 'Service name' })
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @ApiProperty({ description: 'Service description', required: false })
+  @IsString()
+  @IsOptional()
+  description?: string;
+}
+```
+
+**Error Handling**
+- Use NestJS built-in exceptions (`NotFoundException`, `BadRequestException`, etc.)
+- Log errors with `winstonLogger`
+- Provide meaningful error messages
+```typescript
+import { NotFoundException } from '@nestjs/common';
+import { winstonLogger } from '@/logger/winston.logger';
+
+async findById(id: string) {
+  const entity = await this.model.findById(id);
+  if (!entity) {
+    winstonLogger.warn(`Entity not found: ${id}`);
+    throw new NotFoundException(`Entity with ID ${id} not found`);
+  }
+  return entity;
+}
+```
+
+**Async/Await**
+- Always use async/await, never raw Promises with `.then()`
+- Handle errors with try/catch blocks
+- Use `Promise.all()` for concurrent operations
+
+**Type Safety**
+- Use strict TypeScript mode
+- Avoid `any` type - use `unknown` or proper types
+- Define interfaces for all data structures
+- Use type guards when needed
+
+**Service Layer Patterns**
+- Services should return domain objects, not HTTP responses
+- Keep controllers thin - delegate logic to services
+- Use helpers for data transformations
+- Use repositories for data access patterns
+
+### AI Agent System Patterns
+
+**Session Management**
+- Always use `SessionHelper` for session operations
+- Never directly access Redis from controllers/services
+- Use `ensureSession()` before any session operation
+```typescript
+// ✅ Good
+await this.sessionHelper.ensureSession(callSid);
+await this.sessionHelper.appendUserMessage(callSid, message);
+
+// ❌ Bad
+await this.redis.set(callSid, JSON.stringify(data));
+```
+
+**AI Integration**
+- Use `AiIntegrationService` for all LLM calls
+- Handle AI service timeouts and retries
+- Provide fallback responses if AI fails
+```typescript
+try {
+  const reply = await this.aiIntegration.getAIReply(callSid, message);
+  return reply.message;
+} catch (error) {
+  winstonLogger.error('AI service failed', { error });
+  return SYSTEM_RESPONSES.fallback;
+}
+```
+
+**Agent Decision Making**
+- Use `NextAction` enum for conversation flow control
+- Let AI determine `shouldHangup` flag
+- Log all agent decisions for debugging
+
+**Data Persistence**
+- Only persist data after call completion
+- Use `CallDataPersistenceService` for call finalization
+- Clean up Redis sessions after persisting to MongoDB
+
+### Frontend (Next.js/React/TypeScript)
+
+**Component Organization**
+- Use feature-based organization in `src/features/`
+- Shared components go in `src/components/`
+- Keep components small and focused (single responsibility)
+
+**State Management**
+- Use Redux for global state (auth, user preferences)
+- Use TanStack Query for server state (API data)
+- Use local state (`useState`) for UI-only state
+- Don't duplicate server state in Redux
+
+**API Calls**
+- Create service files in `src/services/` for API calls
+- Use the configured Axios instance from `src/services/api.ts`
+- Handle loading and error states
+```typescript
+// ✅ Good - Using service layer
+import { fetchCallLogs } from '@/services/calllog.service';
+import { useQuery } from '@tanstack/react-query';
+
+const { data, isLoading, error } = useQuery({
+  queryKey: ['callLogs'],
+  queryFn: fetchCallLogs
+});
+
+// ❌ Bad - Direct API call in component
+const [data, setData] = useState([]);
+useEffect(() => {
+  axios.get('http://localhost:4000/api/calllog').then(setData);
+}, []);
+```
+
+**Form Handling**
+- Use React Hook Form + Zod for all forms
+- Define schema before component
+- Extract reusable field components
+
+**TypeScript in React**
+- Define prop types for all components
+- Use `FC<Props>` or explicit return types
+- Avoid `any` in props
+
+**Client vs Server Components**
+- Use `'use client'` only when necessary (state, effects, browser APIs)
+- Keep server components as default
+- Don't fetch data in client components - use React Query
+
+### Python AI Service (FastAPI)
+
+**Code Organization**
+- Keep routers in `app/api/`
+- Business logic in separate modules
+- Use Pydantic models for validation
+
+**Type Hints**
+- Always use type hints for function parameters and returns
+- Use Pydantic models for request/response validation
+
+**Async Operations**
+- Use `async def` for all endpoints
+- Use `await` for I/O operations
+- Handle exceptions properly
+
+**Response Models**
+- Define Pydantic response models
+- Use FastAPI's `response_model` parameter
+
+## Code Style
+
+### General
+
+**Naming Conventions**
+- Classes: `PascalCase` (e.g., `CallProcessorService`)
+- Functions/methods: `camelCase` (e.g., `handleVoice`)
+- Variables: `camelCase` (e.g., `callSid`)
+- Constants: `UPPER_SNAKE_CASE` (e.g., `SYSTEM_RESPONSES`)
+- Files: `kebab-case.ts` (e.g., `call-processor.service.ts`)
+- Interfaces: `PascalCase` without `I` prefix (e.g., `User`, not `IUser`)
+
+**File Organization**
+- Imports at the top, grouped logically:
+  1. External dependencies (e.g., `@nestjs`, `react`)
+  2. Internal imports with `@/` prefix
+  3. Relative imports (if necessary)
+  4. Type-only imports last
+- One blank line between import groups
+
+**Comments**
+- Write self-documenting code - names should explain intent
+- Add comments for complex business logic or non-obvious decisions
+- Use JSDoc for public APIs
+- Avoid obvious comments
+```typescript
+// ✅ Good - Explains why
+// AI decides to hang up based on conversation context
+if (aiReplyData.shouldHangup === true) {
+  return await this.speakAndLog(callSid, reply, NextAction.HANGUP);
+}
+
+// ❌ Bad - States the obvious
+// Check if shouldHangup is true
+if (aiReplyData.shouldHangup === true) {
+```
+
+**Functions**
+- Keep functions small (ideally < 20 lines)
+- Functions should do one thing
+- Extract complex logic into named helper functions
+- Limit function parameters (max 3-4, use objects for more)
+
+**Error Messages**
+- Be specific about what went wrong
+- Include relevant context (IDs, parameters)
+- Use consistent error message format
+
+## Testing
+
+**Unit Tests**
+- Test business logic in services
+- Mock external dependencies
+- Use descriptive test names
+- Follow AAA pattern: Arrange, Act, Assert
+```typescript
+describe('CallProcessorService', () => {
+  describe('handleVoice', () => {
+    it('should initialize session and load company context', async () => {
+      // Arrange
+      const voiceData = { CallSid: 'test-sid', To: '+1234567890' };
+
+      // Act
+      const result = await service.handleVoice(voiceData);
+
+      // Assert
+      expect(sessionHelper.ensureSession).toHaveBeenCalledWith('test-sid');
+      expect(result).toContain('welcome');
+    });
+  });
+});
+```
+
+**Integration Tests**
+- Test module interactions
+- Test database operations
+- Use test database
+
+**E2E Tests**
+- Test complete user flows
+- Test API endpoints end-to-end
+
+## Security
+
+**Input Validation**
+- Validate all user inputs with class-validator
+- Sanitize data before database operations
+- Never trust client-side data
+
+**Authentication**
+- Use JWT for API authentication
+- Validate tokens in guards
+- Don't expose sensitive data in responses
+
+**Environment Variables**
+- Never commit `.env` files
+- Use `@nestjs/config` for configuration
+- Validate required env vars on startup
+
+**SQL/NoSQL Injection**
+- Use Mongoose ORM properly
+- Never build queries with string concatenation
+- Use parameterized queries
+
+## Performance
+
+**Database**
+- Add indexes for frequently queried fields
+- Use lean queries when you don't need Mongoose documents
+- Avoid N+1 queries - use population wisely
+
+**Caching**
+- Use Redis for session data (already implemented)
+- Cache expensive AI responses when appropriate
+- Set appropriate TTLs
+
+**API Optimization**
+- Paginate large result sets
+- Use field projection to limit returned data
+- Implement rate limiting for public endpoints
+
+## Git Commit Messages
+
+- Use conventional commits format: `type(scope): message`
+- Types: `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`
+- Examples:
+  - `feat(telephony): add support for call recording`
+  - `fix(auth): resolve JWT expiration issue`
+  - `refactor(session): extract Redis logic to repository`
+  - `docs(readme): update AI agent workflow diagram`
+
+## Project-Specific Rules
+
+**Telephony Module**
+- All Twilio webhook handlers go in `telephony.controller.ts`
+- Session management must use `SessionHelper`
+- AI calls must go through `AiIntegrationService`
+- Use `buildSayResponse` utility for TwiML responses
+
+**Service Booking**
+- Validate service existence before booking
+- Check availability before creating bookings
+- Use transaction patterns for multi-step operations
+
+**Agent Memory**
+- Store conversation history in Redis during call
+- Transfer to MongoDB only after call completion
+- Clean up Redis sessions after successful persistence
+
+**AI Response Handling**
+- Always have fallback responses
+- Log AI failures for monitoring
+- Respect `shouldHangup` flag from AI
+
+## Anti-Patterns to Avoid
+
+❌ **Don't:**
+- Use `any` type
+- Ignore TypeScript errors
+- Put business logic in controllers
+- Access database directly from controllers
+- Use `console.log` (use `winstonLogger`)
+- Commit sensitive data
+- Create god classes/services
+- Use global state (except Redux)
+- Ignore error handling
+- Write untestable code
+- Repeat yourself
+- Use magic numbers/strings
+- Create circular dependencies
+
+✅ **Do:**
+- Use proper TypeScript types
+- Follow module structure
+- Keep controllers thin
+- Use service layer
+- Use proper logging
+- Use environment variables
+- Follow single responsibility
+- Use composition
+- Handle all errors gracefully
+- Write testable code
+- Extract constants
+- Use meaningful names
+- Use dependency injection
+
+## When in Doubt
+
+1. Check existing code for patterns
+2. Follow NestJS/Next.js best practices
+3. Prioritize readability over cleverness
+4. Ask: "Will this be easy to maintain in 6 months?"
+5. Keep it simple (KISS)
+6. Don't repeat yourself (DRY)
+7. Follow SOLID principles
+
+## Code Review Checklist
+
+Before submitting code, ensure:
+- [ ] Follows SOLID principles
+- [ ] No code duplication (DRY)
+- [ ] Simple and readable (KISS)
+- [ ] Uses `@/` path aliases
+- [ ] Proper TypeScript types
+- [ ] Error handling implemented
+- [ ] Logging added where appropriate
+- [ ] Tests written (unit/integration)
+- [ ] No sensitive data in code
+- [ ] Follows naming conventions
+- [ ] Swagger docs updated (if API changes)
+- [ ] No `console.log` statements
+- [ ] No `any` types
+- [ ] Comments for complex logic only
