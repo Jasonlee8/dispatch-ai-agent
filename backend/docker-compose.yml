@@ -14,15 +14,16 @@ services:
     env_file:
       - .env
     environment:
-      - NODE_ENV=development
+      # - NODE_ENV=development
+      - NODE_ENV=production
       - MONGODB_URI=mongodb://mongodb:27017/dispatchai
       - SHOW_ERROR_MESSAGE=true
       - LOG_TO_FILE=false
     networks:
       - dispatchai-network
-    volumes:
-      - ./:/app
-      - /app/node_modules
+    # volumes:
+    #   - ./:/app
+    #   - /app/node_modules
       
   mongodb:
     image: mongo:latest

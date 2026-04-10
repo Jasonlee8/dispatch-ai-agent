@@ -8,5 +8,10 @@ WORKDIR /app
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install
 
+COPY . .
+
+RUN pnpm build
+
+
 EXPOSE 4000
 CMD ["pnpm", "run", "dev"]

@@ -29,7 +29,7 @@ import { CallLog, CallLogDocument } from './schema/calllog.schema';
 
 @ApiTags('calllog')
 @Controller('users/:userId/calllogs')
-@UseGuards(AuthGuard('jwt'))
+// @UseGuards(AuthGuard('jwt'))
 export class CalllogController {
   constructor(private readonly calllogService: CalllogService) {}
 

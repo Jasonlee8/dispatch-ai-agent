@@ -1,0 +1,104 @@
+[
+  {
+    "id": "case1_basic_plumbing",
+    "ok": true,
+    "turns": 6,
+    "errors": [],
+    "bookingId": "692308896e31b90c0e637272",
+    "missingFields": [],
+    "finalStep": "done",
+    "finalHangup": true
+  },
+  {
+    "id": "case2_cleaning_afternoon",
+    "ok": true,
+    "turns": 6,
+    "errors": [],
+    "bookingId": "692308896e31b90c0e637276",
+    "missingFields": [],
+    "finalStep": "done",
+    "finalHangup": true
+  },
+  {
+    "id": "case3_no_then_redo",
+    "ok": true,
+    "turns": 12,
+    "errors": [],
+    "bookingId": "692308896e31b90c0e63727a",
+    "missingFields": [],
+    "finalStep": "done",
+    "finalHangup": true
+  },
+  {
+    "id": "case4_short_name",
+    "ok": true,
+    "turns": 6,
+    "errors": [],
+    "bookingId": "692308896e31b90c0e63727e",
+    "missingFields": [],
+    "finalStep": "done",
+    "finalHangup": true
+  },
+  {
+    "id": "case5_yes_variation",
+    "ok": true,
+    "turns": 6,
+    "errors": [],
+    "bookingId": "692308896e31b90c0e637282",
+    "missingFields": [],
+    "finalStep": "done",
+    "finalHangup": true
+  },
+  {
+    "id": "case6_bad_confirm",
+    "ok": true,
+    "turns": 7,
+    "errors": [],
+    "bookingId": "692308896e31b90c0e637286",
+    "missingFields": [],
+    "finalStep": "done",
+    "finalHangup": true
+  },
+  {
+    "id": "case7_weird_phone_format",
+    "ok": true,
+    "turns": 6,
+    "errors": [],
+    "bookingId": "692308896e31b90c0e63728a",
+    "missingFields": [],
+    "finalStep": "done",
+    "finalHangup": true
+  },
+  {
+    "id": "case8_missing_yes",
+    "ok": true,
+    "turns": 5,
+    "errors": [],
+    "bookingId": null,
+    "missingFields": [],
+    "finalStep": "confirm",
+    "finalHangup": false
+  },
+  {
+    "id": "case9_second_yes_after_done",
+    "ok": false,
+    "turns": 7,
+    "errors": [
+      "hangup_mismatch(exp=True, got=False)"
+    ],
+    "bookingId": "692308896e31b90c0e63728e",
+    "missingFields": [],
+    "finalStep": "done",
+    "finalHangup": false
+  },
+  {
+    "id": "case10_fast_inputs",
+    "ok": true,
+    "turns": 6,
+    "errors": [],
+    "bookingId": "692308896e31b90c0e637292",
+    "missingFields": [],
+    "finalStep": "done",
+    "finalHangup": true
+  }
+]

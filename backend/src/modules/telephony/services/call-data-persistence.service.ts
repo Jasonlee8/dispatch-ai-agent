@@ -44,6 +44,9 @@ export class CallDataPersistenceService {
     twilioParams: VoiceStatusBody,
   ): Promise<void> {
     const session = await this.sessions.load(callSid);
+    winstonLogger.log(
+      `[E2E] processCallCompletion load session key=call:${callSid} exists=${!!session}`,
+    );
     if (!session) {
       winstonLogger.warn(
         `[CallDataPersistenceService][processCallCompletion] Session not found for callSid: ${callSid}`,

@@ -44,7 +44,8 @@ export class TelephonyController {
   @HttpCode(200)
   @ApiOperation({ summary: 'Handle Twilio Status Callback' })
   @ApiResponse({ status: 200, description: 'OK' })
-  async handleStatus(@Body() body: VoiceStatusBody): Promise<void> {
+  async handleStatus(@Body() body: VoiceStatusBody): Promise<{ok: true}> {
     await this.telephonyService.handleStatus(body);
+    return { ok: true }; 
   }
 }

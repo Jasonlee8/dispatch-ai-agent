@@ -303,3 +303,29 @@ This is a private project. For questions or contributions, please contact the de
 ## License
 
 Proprietary - All rights reserved
+
+
+Twilio webhook
+      ↓
+telephony controller
+      ↓
+session state machine
+      ↓
+AI conversation
+      ↓
+booking extraction
+      ↓
+Mongo persistence
+      ↓
+AI summary
+
+
+Twilio
+   ↓
+NestJS Telephony Gateway
+   ↓
+AI Conversation Service
+   ↓
+FastAPI LLM Engine
+   ↓
+MongoDB + Redis

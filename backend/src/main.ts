@@ -13,6 +13,10 @@ import { setupSwagger } from '@/config/swagger.config';
 import { winstonLogger } from '@/logger/winston.logger';
 import { AppModule } from '@/modules/app.module';
 async function bootstrap(): Promise<void> {
+  console.log("===== NEST STARTING =====");
+  console.log("MONGO_URI =", process.env.MONGO_URI);
+  console.log("MONGO_DB =", process.env.MONGODB_URI);
+
   const app: INestApplication = await NestFactory.create(AppModule);
   app.useLogger(winstonLogger);
   app.use('/api/webhooks/stripe', express.raw({ type: 'application/json' }));
@@ -25,10 +29,21 @@ async function bootstrap(): Promise<void> {
       forbidUnknownValues: true,
     }),
   );
+  // app.enableCors({
+  //   origin: process.env.CORS_ORIGIN ?? '*',
+  //   credentials: true, // Enable cookies in CORS
+  // });
   app.enableCors({
-    origin: process.env.CORS_ORIGIN ?? '*',
-    credentials: true, // Enable cookies in CORS
+    origin: process.env.APP_URL ?? '*',   // ★ 不能再用 '*' 了
+    credentials: true,                 // 允许携带 cookie
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: [
+      'Content-Type',
+      'x-csrf-token',
+      'Authorization',
+    ],
   });
+
 
   app.use(cookieParser()); // Add cookie parser middleware
   app.useGlobalFilters(new GlobalExceptionFilter());

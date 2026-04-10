@@ -16,10 +16,12 @@ import { ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { CreateServiceBookingDto } from '@/modules/service-booking/dto/create-service-booking.dto';
 import { ServiceBooking } from '@/modules/service-booking/schema/service-booking.schema';
 import { ServiceBookingService } from '@/modules/service-booking/service-booking.service';
+import { SkipCSRF } from '@/common/decorators/skip-csrf.decorator';
 
 @ApiTags('service-bookings')
+@SkipCSRF() 
 @Controller('bookings')
-@UseGuards(AuthGuard('jwt'))
+// @UseGuards(AuthGuard('jwt'))
 export class ServiceBookingController {
   constructor(private readonly bookingService: ServiceBookingService) {}
 

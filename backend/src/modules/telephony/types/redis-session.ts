@@ -39,3 +39,4 @@ export interface CallSkeleton {
   confirmEmailsent: boolean;
   createdAt?: string;
 }
+

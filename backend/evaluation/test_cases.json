@@ -1,0 +1,169 @@
+[
+  {
+    "id": "case1_basic_plumbing",
+    "turns": [
+      "John",
+      "0400000000",
+      "123 Main St Clayton",
+      "Plumbing service",
+      "Tomorrow at 9am",
+      "yes"
+    ],
+    "expect": {
+      "shouldHangup": true,
+      "step": "done",
+      "requireBookingId": true
+    }
+  },
+  {
+    "id": "case2_cleaning_afternoon",
+    "turns": [
+      "Alice",
+      "0411222333",
+      "5 Rose St Box Hill",
+      "House cleaning",
+      "Next Monday 2pm",
+      "yes"
+    ],
+    "expect": {
+      "shouldHangup": true,
+      "step": "done",
+      "requireBookingId": true
+    }
+  },
+  {
+    "id": "case3_no_then_redo",
+    "turns": [
+      "Ben",
+      "0499888777",
+      "8 Station Rd Ringwood",
+      "Garden maintenance",
+      "Friday 10am",
+      "no",
+      "Ben",
+      "0499888777",
+      "8 Station Rd Ringwood",
+      "Garden maintenance",
+      "Friday 10am",
+      "yes"
+    ],
+    "expect": {
+      "shouldHangup": true,
+      "step": "done",
+      "requireBookingId": true
+    }
+  },
+  {
+    "id": "case4_short_name",
+    "turns": [
+      "Li",
+      "0433000111",
+      "99 Whitehorse Rd Blackburn",
+      "Electrical service",
+      "Today 4pm",
+      "yes"
+    ],
+    "expect": {
+      "shouldHangup": true,
+      "step": "done",
+      "requireBookingId": true
+    }
+  },
+  {
+    "id": "case5_yes_variation",
+    "turns": [
+      "Tom",
+      "0400123123",
+      "1 Queen St Melbourne",
+      "Plumbing service",
+      "Tomorrow morning",
+      "okay"
+    ],
+    "expect": {
+      "shouldHangup": true,
+      "step": "done",
+      "requireBookingId": true
+    }
+  },
+  {
+    "id": "case6_bad_confirm",
+    "turns": [
+      "Kate",
+      "0400999888",
+      "22 Collins St Melbourne",
+      "House cleaning",
+      "Saturday 11am",
+      "maybe",
+      "yes"
+    ],
+    "expect": {
+      "shouldHangup": true,
+      "step": "done",
+      "requireBookingId": true
+    }
+  },
+  {
+    "id": "case7_weird_phone_format",
+    "turns": [
+      "Sam",
+      "+61 400 111 222",
+      "3 Park Rd Carlton",
+      "Plumbing service",
+      "Next week Tuesday",
+      "yes"
+    ],
+    "expect": {
+      "shouldHangup": true,
+      "step": "done",
+      "requireBookingId": true
+    }
+  },
+  {
+    "id": "case8_missing_yes",
+    "turns": [
+      "Eva",
+      "0400555666",
+      "10 King St Richmond",
+      "Garden maintenance",
+      "Sunday 9am"
+    ],
+    "expect": {
+      "shouldHangup": false,
+      "step": "confirm",
+      "requireBookingId": false
+    }
+  },
+  {
+    "id": "case9_second_yes_after_done",
+    "turns": [
+      "Leo",
+      "0400666777",
+      "1 Main Rd Clayton",
+      "Plumbing service",
+      "Tomorrow 8am",
+      "yes",
+      "yes"
+    ],
+    "expect": {
+      "shouldHangup": true,
+      "step": "done",
+      "requireBookingId": true
+    }
+  },
+  {
+    "id": "case10_fast_inputs",
+    "turns": [
+      "Nina",
+      "0400777888",
+      "77 Chapel St South Yarra",
+      "House cleaning",
+      "Wed 6pm",
+      "yes"
+    ],
+    "expect": {
+      "shouldHangup": true,
+      "step": "done",
+      "requireBookingId": true
+    }
+  }
+]

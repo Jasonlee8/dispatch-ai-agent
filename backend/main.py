@@ -1,9 +1,14 @@
 import sys
 from pathlib import Path
+from app.ai import rag  # 新增这一行
 from app.config import get_settings
-from app.api import health, chat, call, summary
+from app.api import health, chat, call, summary, debug
+from app.infrastructure.mongo import get_db
+from app.api.chat import router as answer_router
+from app.api.call import router as call_router
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
 
 # Add the app directory to Python path for absolute imports
 app_dir = Path(__file__).parent
@@ -17,6 +22,8 @@ app = FastAPI(
     version=settings.api_version,
     debug=settings.debug,
 )
+
+load_dotenv()
 
 # CORS middleware
 app.add_middleware(
@@ -32,6 +39,13 @@ app.include_router(health.router, prefix=settings.api_prefix)
 app.include_router(chat.router, prefix=settings.api_prefix)
 app.include_router(call.router, prefix=settings.api_prefix)
 app.include_router(summary.router, prefix=settings.api_prefix)
+app.include_router(rag.router, prefix=settings.api_prefix) 
+app.include_router(answer_router)
+app.include_router(call_router)  
+
+
+app.include_router(debug.router, prefix=settings.api_prefix)
+
 
 
 @app.get("/")
@@ -42,7 +56,10 @@ async def root():
         "environment": settings.environment,
     }
 
-
+@app.get("/api/health/mongo")
+async def test_mongo():
+    db = get_db()
+    return {"collections": db.list_collection_names()}
 
 if __name__ == "__main__":
     import uvicorn

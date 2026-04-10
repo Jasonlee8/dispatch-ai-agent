@@ -1,0 +1,13 @@
+{
+  "dependencies": {
+    "@nestjs/axios": "^4.0.1",
+    "@nestjs/mongoose": "^11.0.3",
+    "bcryptjs": "^3.0.3",
+    "mongoose": "^8.19.3",
+    "rxjs": "^7.8.2"
+  },
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^24.10.0"
+  }
+}

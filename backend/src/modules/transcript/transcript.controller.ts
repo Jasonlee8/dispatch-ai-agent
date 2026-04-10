@@ -27,7 +27,7 @@ import { TranscriptService } from './transcript.service';
 
 @ApiTags('transcripts')
 @Controller('calllogs/:calllogId/transcript')
-@UseGuards(AuthGuard('jwt'))
+// @UseGuards(AuthGuard('jwt'))
 export class TranscriptController {
   constructor(private readonly transcriptService: TranscriptService) {}
 

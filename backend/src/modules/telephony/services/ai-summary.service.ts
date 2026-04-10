@@ -38,6 +38,8 @@ export class AiSummaryService {
       const cleanedSummary =
         DataTransformerHelper.cleanAISummaryResponse(aiSummary);
 
+      winstonLogger.log("AI summary resp:", aiSummary);
+
       winstonLogger.log(
         `[AiSummaryService][generateSummary] Generated AI summary for ${callSid}`,
       );
