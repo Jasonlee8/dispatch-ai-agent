@@ -187,24 +187,34 @@ export class HealthService implements OnModuleInit, OnModuleDestroy {
     }
   }
 
+  // private async sendHeartbeat(): Promise<void> {
+  //   try {
+  //     const start = performance.now();
+  //     const { data } = await firstValueFrom(
+  //       this.http.get<{ message: string }>('/health/ping'),
+  //     );
+  //     const duration = Math.round(performance.now() - start);
+  //     this.logger.verbose(
+  //       `✅ AI 心跳成功（/health/ping），返回: ${JSON.stringify(data)}, 耗时: ${String(duration)}ms`,
+  //     );
+  //   } catch (err) {
+  //     const msg =
+  //       err instanceof Error
+  //         ? err.message
+  //         : typeof err === 'object' && err !== null
+  //           ? JSON.stringify(err)
+  //           : String(err);
+  //     this.logger.warn(`⚠️ AI 心跳失败：${msg}`);
+  //   }
+  // }
+
   private async sendHeartbeat(): Promise<void> {
-    try {
-      const start = performance.now();
-      const { data } = await firstValueFrom(
-        this.http.get<{ message: string }>('/health/ping'),
-      );
-      const duration = Math.round(performance.now() - start);
-      this.logger.verbose(
-        `✅ AI 心跳成功（/health/ping），返回: ${JSON.stringify(data)}, 耗时: ${String(duration)}ms`,
-      );
-    } catch (err) {
-      const msg =
-        err instanceof Error
-          ? err.message
-          : typeof err === 'object' && err !== null
-            ? JSON.stringify(err)
-            : String(err);
-      this.logger.warn(`⚠️ AI 心跳失败：${msg}`);
-    }
+  try {
+    await firstValueFrom(
+      this.http.get<{ message: string }>('/health/ping'),
+    );
+  } catch {
+
   }
+}
 }

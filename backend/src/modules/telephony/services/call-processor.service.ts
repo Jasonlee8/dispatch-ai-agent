@@ -84,6 +84,40 @@ export class CallProcessorService {
     return this.speakAndLog(CallSid, welcome, NextAction.GATHER);
   }
 
+  // async handleGather({
+  //   CallSid,
+  //   SpeechResult = '',
+  // }: VoiceGatherBody): Promise<string> {
+  //   await this.sessionHelper.ensureSession(CallSid);
+  //   let reply: string = SYSTEM_RESPONSES.fallback;
+
+  //   if (SpeechResult) {
+  //     try {
+  //       await this.sessionHelper.appendUserMessage(CallSid, SpeechResult);
+  //       const aiReplyData = await this.aiIntegration.getAIReply(
+  //         CallSid,
+  //         SpeechResult,
+  //       );
+  //       reply = aiReplyData.message.trim() || SYSTEM_RESPONSES.fallback;
+
+  //       // Check if AI indicates conversation should end
+  //       if (aiReplyData.shouldHangup === true) {
+  //         winstonLogger.log(
+  //           `[CallProcessorService][callSid=${CallSid}][handleGather] AI indicates conversation complete, hanging up`,
+  //         );
+  //         return await this.speakAndLog(CallSid, reply, NextAction.HANGUP);
+  //       }
+  //     } catch (err) {
+  //       winstonLogger.error(
+  //         `[CallProcessorService][callSid=${CallSid}][handleGather] AI call failed`,
+  //         { stack: (err as Error).stack },
+  //       );
+  //       reply = SYSTEM_RESPONSES.error;
+  //     }
+  //   }
+  //   return this.speakAndLog(CallSid, reply, NextAction.GATHER);
+  // }
+
   async handleGather({
     CallSid,
     SpeechResult = '',
@@ -91,16 +125,32 @@ export class CallProcessorService {
     await this.sessionHelper.ensureSession(CallSid);
     let reply: string = SYSTEM_RESPONSES.fallback;
 
-    if (SpeechResult) {
+    const cleanedSpeech = SpeechResult.trim().replace(/\s+/g, ' ');
+    const text = cleanedSpeech.toLowerCase().replace(/[^\w\s]/g, '').trim();
+
+    const yesWords = ['yes', 'yeah', 'yep', 'correct', 'right', 'sure', 'ok', 'okay'];
+
+    if (cleanedSpeech) {
       try {
-        await this.sessionHelper.appendUserMessage(CallSid, SpeechResult);
+        await this.sessionHelper.appendUserMessage(CallSid, cleanedSpeech);
+
+        // 🔥 关键：先拦截 YES（不要让 AI 处理）
+        if (yesWords.some((w) => text.includes(w))) {
+          return await this.speakAndLog(
+            CallSid,
+            'Great, your booking is confirmed. Thank you! Goodbye.',
+            NextAction.HANGUP,
+          );
+        }
+
+        // 其他情况 → 才走 AI
         const aiReplyData = await this.aiIntegration.getAIReply(
           CallSid,
-          SpeechResult,
+          cleanedSpeech,
         );
+
         reply = aiReplyData.message.trim() || SYSTEM_RESPONSES.fallback;
 
-        // Check if AI indicates conversation should end
         if (aiReplyData.shouldHangup === true) {
           winstonLogger.log(
             `[CallProcessorService][callSid=${CallSid}][handleGather] AI indicates conversation complete, hanging up`,
@@ -115,8 +165,10 @@ export class CallProcessorService {
         reply = SYSTEM_RESPONSES.error;
       }
     }
+
     return this.speakAndLog(CallSid, reply, NextAction.GATHER);
   }
+
 
   async handleStatus(statusData: VoiceStatusBody): Promise<void> {
     const { CallSid, CallStatus } = statusData;
